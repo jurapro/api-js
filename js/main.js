@@ -18,12 +18,14 @@ const f = async (url, method = 'get', data = [], token = null) => {
 }
 
 class Product {
-    constructor(product) {
+    constructor(product, user) {
+        this.user = user;
         this.id = product.id;
         this.name = product.name;
         this.description = product.description;
         this.price = product.price;
         this.$html = this.getTemplate();
+        this.bindEvents();
     }
 
     getTemplate() {
@@ -33,12 +35,37 @@ class Product {
             <p>${this.name} - ${this.price} руб.</p>
             <hr>
             <p>${this.description}</p>`;
+        if (this.user.api_token) {
+            div.append(this.getButtonAddToCart());
+        }
         return div;
+    }
+
+    getButtonAddToCart() {
+        let btn = document.createElement('button');
+        btn.textContent = '+';
+        btn.addEventListener('click', () => this.addToCart());
+        return btn;
+    }
+
+    bindEvents() {
+        document.addEventListener('user-login', () => {
+            this.$html.append(this.getButtonAddToCart());
+        });
+
+        document.addEventListener('user-out', () => {
+            this.$html.querySelector('button').remove();
+        });
+    }
+
+    addToCart() {
+        alert(this.id + this.user.api_token);
     }
 }
 
 class Showcase {
-    constructor() {
+    constructor(user) {
+        this.user = user;
         this.$html = document.querySelector('.showcase');
         this.products = [];
         this.loadProducts().then(() => this.render());
@@ -46,7 +73,7 @@ class Showcase {
 
     async loadProducts() {
         let list = await f('products');
-        list.forEach(el => this.products.push(new Product(el)));
+        list.forEach(el => this.products.push(new Product(el, this.user)));
     }
 
     render() {
@@ -56,34 +83,30 @@ class Showcase {
 }
 
 class LoginForm {
-    constructor() {
+    constructor(user) {
+        this.user = user;
         this.data = {
             email: '',
             password: '',
-            api_token: ''
         };
         this.$html = document.querySelector('.profile');
         this.render();
         this.bindEvents();
     }
 
-
     bindEvents() {
-
-        document.addEventListener('user-login', e => {
-            this.data.api_token = e.detail.api_token;
+        document.addEventListener('user-login', () => {
             this.render();
         });
 
         document.addEventListener('user-out', () => {
-            this.data.api_token = '';
             this.render();
         });
     }
 
     render() {
         this.$html.innerHTML = '';
-        if (this.data.api_token) {
+        if (this.user.api_token) {
             this.$html.append(this.getTemplateOut());
         } else {
             this.$html.append(this.getTemplate());
@@ -116,7 +139,7 @@ class LoginForm {
         let div = document.createElement('div');
         div.classList.add('item');
         div.innerHTML = `
-            <h3>Вы вошли как ${this.data.email}</h3> 
+            <h3>Вы вошли как ${this.user.email}</h3> 
             <button>Выход</button>          
             `;
         div.querySelector('button')
@@ -138,8 +161,8 @@ class LoginForm {
     }
 
     async out() {
-        if (!this.data.api_token) return;
-        let res = await f('logout', 'post', this.data, this.data.api_token);
+        if (!this.user.api_token) return;
+        let res = await f('logout', 'post', this.data, this.user.api_token);
         if (!res.message) {
             document.dispatchEvent(new CustomEvent('user-out'));
         }
@@ -147,11 +170,62 @@ class LoginForm {
 
 }
 
-class App {
+class User {
     constructor() {
-        this.showcase = new Showcase();
-        this.loginForm = new LoginForm();
+        this.email = '';
+        this.api_token = '';
+        this.bindEvents();
+    }
+
+    bindEvents() {
+        document.addEventListener('user-login', e => {
+            this.email = e.detail.email;
+            this.api_token = e.detail.api_token;
+            this.save();
+        });
+
+        document.addEventListener('user-out', () => {
+            this.email = '';
+            this.api_token = '';
+            this.save();
+        });
+    }
+
+    save() {
+        localStorage.setItem('user', JSON.stringify({email: this.email, api_token: this.api_token}));
+    }
+
+    async load() {
+        let user = JSON.parse(localStorage.getItem('user'));
+        if (!user) return;
+
+        if (! await this.check(user.api_token)) return;
+
+        document.dispatchEvent(new CustomEvent(
+            'user-login', {
+                detail: {email: user.email, api_token: user.api_token}
+            }
+        ));
+    }
+
+    async check(api_token) {
+        let res = await f('user','get',[],api_token);
+        return !res.message;
     }
 }
 
-const app = new App();
+
+class App {
+    constructor() {
+        this.user = new User();
+        this.showcase = new Showcase(this.user);
+        this.loginForm = new LoginForm(this.user);
+        this.loadSaveData();
+    }
+
+    loadSaveData() {
+        this.user.load();
+    }
+}
+
+new App();
