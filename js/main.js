@@ -1,6 +1,5 @@
 const host = 'http://localhost/api';
-
-const f = async (url, method = 'get', data = [], token = null) => {
+const f = async (url, method = 'get', token = null, data = []) => {
     const options = {
         method: method.toUpperCase(),
         headers: {
@@ -25,7 +24,7 @@ class Product {
         this.description = product.description;
         this.price = product.price;
         this.$html = this.getTemplate();
-        this.bindEvents();
+
     }
 
     getTemplate() {
@@ -35,9 +34,6 @@ class Product {
             <p>${this.name} - ${this.price} руб.</p>
             <hr>
             <p>${this.description}</p>`;
-        if (this.user.api_token) {
-            div.append(this.getButtonAddToCart());
-        }
         return div;
     }
 
@@ -46,16 +42,6 @@ class Product {
         btn.textContent = '+';
         btn.addEventListener('click', () => this.addToCart());
         return btn;
-    }
-
-    bindEvents() {
-        document.addEventListener('user-login', () => {
-            this.$html.append(this.getButtonAddToCart());
-        });
-
-        document.addEventListener('user-out', () => {
-            this.$html.querySelector('button').remove();
-        });
     }
 
     addToCart() {
@@ -68,18 +54,83 @@ class Showcase {
         this.user = user;
         this.$html = document.querySelector('.showcase');
         this.products = [];
-        this.loadProducts().then(() => this.render());
+        this.bindEvents();
+    }
+
+    bindEvents() {
+        document.addEventListener('user-login', () => {
+            this.addButtonToCart();
+        });
+
+        document.addEventListener('user-out', () => {
+            this.removeButtonToCart();
+        });
     }
 
     async loadProducts() {
         let list = await f('products');
         list.forEach(el => this.products.push(new Product(el, this.user)));
+        this.render();
     }
 
     render() {
         this.$html.innerHTMl = '';
         this.products.forEach(el => this.$html.append(el.$html));
     }
+
+    addButtonToCart() {
+        this.products.forEach(el => {
+            el.$html.append(el.getButtonAddToCart());
+        });
+    }
+
+    removeButtonToCart() {
+        this.products.forEach(el => {
+            el.$html.querySelector('button')?.remove();
+        });
+    }
+}
+
+class Cart {
+    constructor(user) {
+        this.user = user;
+        this.$html = document.querySelector('.cart');
+        this.$title = this.getTitle();
+        this.products = [];
+        this.bindEvents();
+    }
+
+    async loadProducts() {
+        let list = await f('cart', 'get', this.user.api_token);
+        list.forEach(el => this.products.push(new Product(el.product, this.user)));
+        this.render();
+    }
+
+    getTitle() {
+        const h = document.createElement('h3');
+        h.textContent = 'Ваша корзина';
+        return h;
+    }
+
+    render() {
+        this.$html.append(this.$title);
+        this.products.forEach(el => this.$html.append(el.$html));
+    }
+
+    bindEvents() {
+        document.addEventListener('user-login', () => {
+            this.loadProducts();
+        });
+
+        document.addEventListener('user-out', () => {
+            this.products.forEach(el => {
+                el.$html.remove();
+            });
+            this.products = [];
+            this.$title.remove();
+        });
+    }
+
 }
 
 class LoginForm {
@@ -89,28 +140,24 @@ class LoginForm {
             email: '',
             password: '',
         };
-        this.$html = document.querySelector('.profile');
-        this.render();
+        this.$html = document.querySelector('.login');
+        this.render(this.getTemplate());
         this.bindEvents();
     }
 
     bindEvents() {
         document.addEventListener('user-login', () => {
-            this.render();
+            this.render(this.getTemplateOut());
         });
 
         document.addEventListener('user-out', () => {
-            this.render();
+            this.render(this.getTemplate());
         });
     }
 
-    render() {
+    render(template) {
         this.$html.innerHTML = '';
-        if (this.user.api_token) {
-            this.$html.append(this.getTemplateOut());
-        } else {
-            this.$html.append(this.getTemplate());
-        }
+        this.$html.append(template);
     }
 
     inputText(e) {
@@ -148,7 +195,7 @@ class LoginForm {
     }
 
     async login() {
-        let res = await f('login', 'post', this.data);
+        let res = await f('login', 'post', null, this.data);
         if (res.message) {
             this.$html.querySelector('.message').innerHTML = 'Не правильный логин или пароль';
         } else {
@@ -162,7 +209,7 @@ class LoginForm {
 
     async out() {
         if (!this.user.api_token) return;
-        let res = await f('logout', 'post', this.data, this.user.api_token);
+        let res = await f('logout', 'post', this.user.api_token, this.data);
         if (!res.message) {
             document.dispatchEvent(new CustomEvent('user-out'));
         }
@@ -199,7 +246,7 @@ class User {
         let user = JSON.parse(localStorage.getItem('user'));
         if (!user) return;
 
-        if (! await this.check(user.api_token)) return;
+        if (!await this.check(user.api_token)) return;
 
         document.dispatchEvent(new CustomEvent(
             'user-login', {
@@ -209,22 +256,23 @@ class User {
     }
 
     async check(api_token) {
-        let res = await f('user','get',[],api_token);
+        let res = await f('user', 'get', api_token);
         return !res.message;
     }
 }
-
 
 class App {
     constructor() {
         this.user = new User();
         this.showcase = new Showcase(this.user);
         this.loginForm = new LoginForm(this.user);
-        this.loadSaveData();
+        this.cart = new Cart(this.user);
+        this.loadData();
     }
 
-    loadSaveData() {
-        this.user.load();
+    async loadData() {
+        await this.showcase.loadProducts();
+        await this.user.load();
     }
 }
 
