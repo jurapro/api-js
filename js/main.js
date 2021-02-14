@@ -15,6 +15,13 @@ const f = async (url, method = 'get', token = null, data = []) => {
 
     return await fetch(`${host}/${url}`, options).then(res => res.json());
 }
+const dEvent = (event, detail) => {
+    document.dispatchEvent(new CustomEvent(
+        event, {
+            detail: detail
+        }
+    ));
+}
 
 class Product {
     constructor(product, user) {
@@ -44,8 +51,10 @@ class Product {
         return btn;
     }
 
-    addToCart() {
-        alert(this.id + this.user.api_token);
+    async addToCart() {
+        let res = await f(`cart/${this.id}`, 'post', this.user.api_token);
+        dEvent('add-to-cart');
+        alert(res.message);
     }
 }
 
@@ -113,6 +122,7 @@ class Cart {
     }
 
     render() {
+        this.$html.innerHTML = '';
         this.$html.append(this.$title);
         this.products.forEach(el => this.$html.append(el.$html));
     }
@@ -128,6 +138,10 @@ class Cart {
             });
             this.products = [];
             this.$title.remove();
+        });
+
+        document.addEventListener('add-to-cart', () => {
+            this.loadProducts();
         });
     }
 
@@ -199,11 +213,7 @@ class LoginForm {
         if (res.message) {
             this.$html.querySelector('.message').innerHTML = 'Не правильный логин или пароль';
         } else {
-            document.dispatchEvent(new CustomEvent(
-                'user-login', {
-                    detail: {email: this.data.email, api_token: res.api_token}
-                }
-            ));
+            dEvent('usr-login',{email: this.data.email, api_token: res.api_token});
         }
     }
 
@@ -211,7 +221,7 @@ class LoginForm {
         if (!this.user.api_token) return;
         let res = await f('logout', 'post', this.user.api_token, this.data);
         if (!res.message) {
-            document.dispatchEvent(new CustomEvent('user-out'));
+            dEvent('user-out')
         }
     }
 
@@ -248,11 +258,7 @@ class User {
 
         if (!await this.check(user.api_token)) return;
 
-        document.dispatchEvent(new CustomEvent(
-            'user-login', {
-                detail: {email: user.email, api_token: user.api_token}
-            }
-        ));
+        dEvent('user-login',{email: user.email, api_token: user.api_token});
     }
 
     async check(api_token) {
