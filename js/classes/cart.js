@@ -1,5 +1,5 @@
 import {f} from "../main.js";
-import Product from "./product.js";
+import ProductInCart from "./productInCart.js";
 
 export default class Cart {
     constructor(user) {
@@ -10,10 +10,9 @@ export default class Cart {
         this.bindEvents();
     }
 
-    async loadProducts() {
-        let list = await f('cart', 'get', this.user.api_token);
-        list.forEach(el => this.products.push(new Product(el.product, this.user)));
-        this.render();
+    clearProducts() {
+        this.$html.innerHTML = '';
+        this.products = [];
     }
 
     getTitle() {
@@ -23,9 +22,8 @@ export default class Cart {
     }
 
     render() {
-        this.$html.innerHTML = '';
         this.$html.append(this.$title);
-        this.products.forEach(el => this.$html.append(el.$html));
+        this.products.forEach(el => this.$html.append(el.product.$html));
     }
 
     bindEvents() {
@@ -34,16 +32,23 @@ export default class Cart {
         });
 
         document.addEventListener('user-out', () => {
-            this.products.forEach(el => {
-                el.$html.remove();
-            });
-            this.products = [];
-            this.$title.remove();
+            this.clearProducts();
         });
 
         document.addEventListener('add-to-cart', () => {
             this.loadProducts();
         });
+
+        document.addEventListener('remove-to-cart', () => {
+            this.loadProducts();
+        });
+    }
+
+    async loadProducts() {
+        this.clearProducts();
+        let list = await f('cart', 'get', this.user.api_token);
+        list.forEach(el => this.products.push(new ProductInCart(el, this.user)));
+        this.render();
     }
 
 }

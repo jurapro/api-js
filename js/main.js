@@ -26,7 +26,7 @@ const dEvent = (event, detail) => {
 import User from './classes/user.js';
 import Showcase from './classes/showcase.js';
 import Cart from './classes/cart.js';
-import LoginForm from './classes/loginform.js';
+import LoginForm from './classes/loginForm.js';
 
 class App {
     constructor() {
