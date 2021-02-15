@@ -11,9 +11,9 @@ export default class Product {
         let div = document.createElement('div');
         div.classList.add('item');
         div.innerHTML = `
-            <p>${this.name} - ${this.price} руб.</p>
+            <p class="name">${this.name} - ${this.price} руб.</p>
             <hr>
-            <p>${this.description}</p>`;
+            <p class="description">${this.description}</p>`;
         return div;
     }
 

@@ -6,7 +6,7 @@ export default class Cart {
         this.user = user;
         this.$html = document.querySelector('.cart');
         this.$title = this.getTitle();
-        this.products = [];
+        this.products = {};
         this.bindEvents();
     }
 
@@ -23,7 +23,16 @@ export default class Cart {
 
     render() {
         this.$html.append(this.$title);
-        this.products.forEach(el => this.$html.append(el.product.$html));
+        this.products.forEach(el => {
+            this.addCountProduct(el[0].getHtml(), el.length);
+            this.$html.append(el[0].getHtml());
+        });
+    }
+
+    addCountProduct(item, count) {
+        let btn = document.createElement('button');
+        btn.textContent = count;
+        item.querySelector('.description').after(btn);
     }
 
     bindEvents() {
@@ -47,7 +56,14 @@ export default class Cart {
     async loadProducts() {
         this.clearProducts();
         let list = await f('cart', 'get', this.user.api_token);
-        list.forEach(el => this.products.push(new ProductInCart(el, this.user)));
+
+        list.forEach(el => {
+            if (!this.products[el.product.id]) {
+                this.products[el.product.id] = [];
+            }
+            this.products[el.product.id].push(new ProductInCart(el, this.user));
+        });
+
         this.render();
     }
 

@@ -16,7 +16,7 @@ export default class Showcase {
 
     render() {
         this.$html.innerHTMl = '';
-        this.products.forEach(el => this.$html.append(el.product.$html));
+        this.products.forEach(el => this.$html.append(el.getHtml()));
     }
 
 }

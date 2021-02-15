@@ -19,7 +19,7 @@ export default class ProductInShowcase {
     }
 
     addButtonToCart() {
-            this.product.$html.append(this.getButtonAddToCart());
+        this.product.$html.append(this.getButtonAddToCart());
     }
 
     removeButtonToCart() {
@@ -31,6 +31,10 @@ export default class ProductInShowcase {
         btn.textContent = '+';
         btn.addEventListener('click', () => this.addToCart());
         return btn;
+    }
+
+    getHtml() {
+        return this.product.$html;
     }
 
     async addToCart() {
