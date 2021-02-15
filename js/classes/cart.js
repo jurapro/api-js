@@ -6,13 +6,13 @@ export default class Cart {
         this.user = user;
         this.$html = document.querySelector('.cart');
         this.$title = this.getTitle();
-        this.products = {};
+        this.items = new Map();
         this.bindEvents();
     }
 
     clearProducts() {
         this.$html.innerHTML = '';
-        this.products = [];
+        this.items = new Map();
     }
 
     getTitle() {
@@ -21,18 +21,18 @@ export default class Cart {
         return h;
     }
 
-    render() {
-        this.$html.append(this.$title);
-        this.products.forEach(el => {
-            this.addCountProduct(el[0].getHtml(), el.length);
-            this.$html.append(el[0].getHtml());
-        });
+    getPrice() {
+        let sum = 0;
+        this.items.forEach(el => sum += el.getPrice());
+        const h = document.createElement('h3');
+        h.textContent = `Сумма вашего заказа: ${sum} руб.`;
+        return h;
     }
 
-    addCountProduct(item, count) {
-        let btn = document.createElement('button');
-        btn.textContent = count;
-        item.querySelector('.description').after(btn);
+    render() {
+        this.$html.append(this.$title);
+        this.items.forEach(el => this.$html.append(el.render()));
+        this.$html.append(this.getPrice());
     }
 
     bindEvents() {
@@ -53,18 +53,21 @@ export default class Cart {
         });
     }
 
+
+    addItem(el) {
+        if(!this.items.has(el.product.id)) {
+            this.items.set(el.product.id, new ProductInCart(el, this.user));
+            return;
+        }
+        this.items.get(el.product.id).addProduct(el);
+    }
+
     async loadProducts() {
         this.clearProducts();
         let list = await f('cart', 'get', this.user.api_token);
 
-        list.forEach(el => {
-            if (!this.products[el.product.id]) {
-                this.products[el.product.id] = [];
-            }
-            this.products[el.product.id].push(new ProductInCart(el, this.user));
-        });
+        list.forEach(el => this.addItem(el));
 
         this.render();
     }
-
 }
