@@ -6,11 +6,11 @@ export default class ItemInShowcase {
     constructor(product, user) {
         this.product = new Product(product);
         this.user = user;
-        this.$html = this.getTemplate();
+        this.$html = this.getElement();
         this.bindEvents();
     }
 
-    getTemplate() {
+    getElement() {
         return this.product.$html;
     }
 

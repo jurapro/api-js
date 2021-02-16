@@ -7,24 +7,46 @@ export default class ItemInCart {
         this.products = new Map();
         this.products.set(el.id, new Product(el.product));
         this.user = user;
-        this.$html = this.getTemplate();
+        this.$html = this.getElement();
+    }
+
+    getElement() {
+        let div = document.createElement('div');
+        div.classList.add('item');
+        div.innerHTML = this.getTemplate();
+        return this.addEventsForButtons(div);
     }
 
     getTemplate() {
-        let div = document.createElement('div');
-        div.classList.add('item');
-        div.innerHTML = `
-            <p class="name">${this.getFirstProduct().product.name} - ${this.getFirstProduct().product.price} руб. x 
-            ${this.getCountProducts()} = ${this.getPrice()} руб.</p>
+        return `
+            <p class="name">
+            ${this.getFirstProduct().product.name} - ${this.getFirstProduct().product.price} руб. x 
+            ${this.getCountProducts()} = ${this.getPrice()} руб.
+            </p>
             <hr>
-            <p class="description"><button class="remove">-</button> <button class="add">+</button></p>`;
-        return this.addButtonsForItem(div);
+        `;
     }
 
-    addButtonsForItem(item) {
-        item.querySelector('.add').addEventListener('click', () => this.addToCart());
-        item.querySelector('.remove').addEventListener('click', () => this.removeFromCart());
+    addEventsForButtons(item) {
+        let div = document.createElement('div');
+        div.append(this.getButtonRemoveFromCart());
+        div.append(this.getButtonAddToCart());
+        item.append(div);
         return item;
+    }
+
+    getButtonAddToCart() {
+        let btn = document.createElement('button');
+        btn.textContent = '+';
+        btn.addEventListener('click', () => this.addToCart());
+        return btn;
+    }
+
+    getButtonRemoveFromCart() {
+        let btn = document.createElement('button');
+        btn.textContent = '-';
+        btn.addEventListener('click', () => this.removeFromCart());
+        return btn;
     }
 
     addProduct(el) {
@@ -48,15 +70,13 @@ export default class ItemInCart {
     }
 
     async removeFromCart() {
-        let res = await f(`cart/${this.getFirstProduct().id}`, 'delete', this.user.api_token);
+        await f(`cart/${this.getFirstProduct().id}`, 'delete', this.user.api_token);
         dEvent('remove-to-cart');
-        alert(res.message);
     }
 
     async addToCart() {
-        let res = await f(`cart/${this.getFirstProduct().product.id}`, 'post', this.user.api_token);
+        await f(`cart/${this.getFirstProduct().product.id}`, 'post', this.user.api_token);
         dEvent('add-to-cart');
-        alert(res.message);
     }
 
 }

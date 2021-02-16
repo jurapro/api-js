@@ -1,4 +1,4 @@
-import {f} from "../main.js";
+import {dEvent, f} from "../main.js";
 import ItemInCart from "./ItemInCart.js";
 
 export default class Cart {
@@ -23,12 +23,16 @@ export default class Cart {
         document.addEventListener('remove-to-cart', () => {
             this.loadProducts();
         });
+        document.addEventListener('order-by', () => {
+            this.loadProducts();
+        });
     }
 
     render() {
         this.$html.append(this.getTitle());
-        this.items.forEach(el => this.$html.append(el.getTemplate()));
-        this.$html.append(this.getPrice());
+        this.items.forEach(el => this.$html.append(el.getElement()));
+        this.$html.append(this.getPriceElement());
+        this.$html.append(this.getButtonAddOrder());
     }
 
     getTitle() {
@@ -37,12 +41,24 @@ export default class Cart {
         return h;
     }
 
+    getPriceElement() {
+        const h = document.createElement('h3');
+        h.textContent = `Сумма вашего заказа: ${this.getPrice()} руб.`;
+        return h;
+    }
+
     getPrice() {
         let sum = 0;
         this.items.forEach(el => sum += el.getPrice());
-        const h = document.createElement('h3');
-        h.textContent = `Сумма вашего заказа: ${sum} руб.`;
-        return h;
+        return sum;
+    }
+
+    getButtonAddOrder() {
+        let btn = document.createElement('button');
+        btn.classList.add('order-btn');
+        btn.textContent = 'Оформить заказ';
+        btn.addEventListener('click', () => this.order());
+        return btn;
     }
 
     addItem(el) {
@@ -53,6 +69,11 @@ export default class Cart {
         this.items.get(el.product.id).addProduct(el);
     }
 
+    clearCart() {
+        this.items.clear();
+        this.$html.innerHTML = '';
+    }
+
     async loadProducts() {
         this.clearCart();
         let list = await f('cart', 'get', this.user.api_token);
@@ -60,9 +81,14 @@ export default class Cart {
         this.render();
     }
 
-    clearCart() {
-        this.items.clear();
-        this.$html.innerHTML = '';
-    }
+    async order() {
+        let res = await f(`order`, 'post', this.user.api_token);
+        if (res.message) {
+            alert(res.message);
+            return;
+        }
 
+        alert(`Заказ оформлен. Сумма заказа составила: ${this.getPrice()}`);
+        dEvent('order-by');
+    }
 }

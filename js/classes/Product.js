@@ -5,16 +5,21 @@ export default class Product {
         this.name = product.name;
         this.description = product.description;
         this.price = product.price;
-        this.$html = this.getTemplate();
+        this.$html = this.getElement();
     }
 
     getTemplate() {
-        let div = document.createElement('div');
-        div.classList.add('item');
-        div.innerHTML = `
+        return `
             <p class="name">${this.name} - ${this.price} руб.</p>
             <hr>
-            <p class="description">${this.description}</p>`;
+            <p class="description">${this.description}</p>
+        `;
+    }
+
+    getElement(){
+        let div = document.createElement('div');
+        div.classList.add('item');
+        div.innerHTML = this.getTemplate();
         return div;
     }
 

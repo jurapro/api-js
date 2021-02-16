@@ -42,7 +42,7 @@ class App {
         await this.showcase.loadProducts();
         await this.user.load();
     }
-    
+
 }
 
 new App();
