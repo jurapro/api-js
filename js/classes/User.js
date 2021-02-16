@@ -39,5 +39,6 @@ export default class User {
         let res = await f('user', 'get', api_token);
         return !res.message;
     }
+
 }
 

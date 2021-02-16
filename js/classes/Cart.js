@@ -3,9 +3,9 @@ import ItemInCart from "./ItemInCart.js";
 
 export default class Cart {
 
-    constructor(user) {
+    constructor(layout, user) {
         this.user = user;
-        this.$html = document.querySelector('.cart');
+        this.$html = document.querySelector(layout);
         this.items = new Map();
         this.bindEvents();
     }
@@ -15,7 +15,7 @@ export default class Cart {
             this.loadProducts();
         });
         document.addEventListener('user-out', () => {
-            this.clearProducts();
+            this.clearCart();
         });
         document.addEventListener('add-to-cart', () => {
             this.loadProducts();
@@ -26,7 +26,6 @@ export default class Cart {
     }
 
     render() {
-        this.$html.innerHTML = '';
         this.$html.append(this.getTitle());
         this.items.forEach(el => this.$html.append(el.getTemplate()));
         this.$html.append(this.getPrice());
@@ -47,7 +46,7 @@ export default class Cart {
     }
 
     addItem(el) {
-        if(!this.items.has(el.product.id)) {
+        if (!this.items.has(el.product.id)) {
             this.items.set(el.product.id, new ItemInCart(el, this.user));
             return;
         }
@@ -55,9 +54,15 @@ export default class Cart {
     }
 
     async loadProducts() {
-        this.items.clear();
+        this.clearCart();
         let list = await f('cart', 'get', this.user.api_token);
         list.forEach(el => this.addItem(el));
         this.render();
     }
+
+    clearCart() {
+        this.items.clear();
+        this.$html.innerHTML = '';
+    }
+
 }

@@ -2,14 +2,14 @@ import {dEvent, f} from "../main.js";
 
 export default class LoginForm {
 
-    constructor(user) {
+    constructor(layout, user) {
         this.user = user;
         this.data = {
             email: '',
             password: '',
         };
-        this.$html = document.querySelector('.login');
-        this.render(this.getTemplate());
+        this.$html = document.querySelector(layout);
+        this.render(this.getTemplateLogin());
         this.bindEvents();
     }
 
@@ -19,7 +19,7 @@ export default class LoginForm {
         });
 
         document.addEventListener('user-out', () => {
-            this.render(this.getTemplate());
+            this.render(this.getTemplateLogin());
         });
     }
 
@@ -32,7 +32,7 @@ export default class LoginForm {
         this.data[e.target.dataset.model] = e.target.value;
     }
 
-    getTemplate() {
+    getTemplateLogin() {
         let div = document.createElement('div');
         div.classList.add('item');
         div.innerHTML = `
@@ -66,16 +66,17 @@ export default class LoginForm {
         let res = await f('login', 'post', null, this.data);
         if (res.message) {
             this.$html.querySelector('.message').innerHTML = 'Не правильный логин или пароль';
-        } else {
-            dEvent('user-login', {email: this.data.email, api_token: res.api_token});
+            return;
         }
+        dEvent('user-login', {email: this.data.email, api_token: res.api_token});
+
     }
 
     async out() {
         if (!this.user.api_token) return;
         let res = await f('logout', 'post', this.user.api_token, this.data);
         if (!res.message) {
-            dEvent('user-out')
+            dEvent('user-out');
         }
     }
 

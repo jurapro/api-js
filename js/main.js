@@ -32,9 +32,9 @@ class App {
 
     constructor() {
         this.user = new User();
-        this.showcase = new Showcase(this.user);
-        this.loginForm = new LoginForm(this.user);
-        this.cart = new Cart(this.user);
+        this.showcase = new Showcase('.showcase', this.user);
+        this.loginForm = new LoginForm('.login', this.user);
+        this.cart = new Cart('.cart', this.user);
         this.loadData();
     }
 
@@ -42,6 +42,7 @@ class App {
         await this.showcase.loadProducts();
         await this.user.load();
     }
+    
 }
 
 new App();

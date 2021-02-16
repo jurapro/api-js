@@ -58,4 +58,5 @@ export default class ItemInCart {
         dEvent('add-to-cart');
         alert(res.message);
     }
+
 }

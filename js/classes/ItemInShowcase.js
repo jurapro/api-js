@@ -44,4 +44,5 @@ export default class ItemInShowcase {
         dEvent('add-to-cart');
         alert(res.message);
     }
+
 }

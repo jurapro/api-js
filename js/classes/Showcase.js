@@ -3,9 +3,9 @@ import ItemInShowcase from "./ItemInShowcase.js";
 
 export default class Showcase {
 
-    constructor(user) {
+    constructor(layout, user) {
         this.user = user;
-        this.$html = document.querySelector('.showcase');
+        this.$html = document.querySelector(layout);
         this.products = [];
     }
 
