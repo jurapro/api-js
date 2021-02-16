@@ -1,6 +1,7 @@
 import {dEvent, f} from "../main.js";
 
 export default class LoginForm {
+
     constructor(user) {
         this.user = user;
         this.data = {

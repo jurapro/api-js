@@ -1,6 +1,7 @@
 import {f,dEvent} from "../main.js";
 
 export default class User {
+
     constructor() {
         this.email = '';
         this.api_token = '';

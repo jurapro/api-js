@@ -23,12 +23,13 @@ const dEvent = (event, detail) => {
     ));
 }
 
-import User from './classes/user.js';
-import Showcase from './classes/showcase.js';
-import Cart from './classes/cart.js';
-import LoginForm from './classes/loginForm.js';
+import User from './classes/User.js';
+import Showcase from './classes/Showcase.js';
+import Cart from './classes/Cart.js';
+import LoginForm from './classes/LoginForm.js';
 
 class App {
+
     constructor() {
         this.user = new User();
         this.showcase = new Showcase(this.user);
@@ -45,4 +46,4 @@ class App {
 
 new App();
 
-export {host, f, dEvent};
+export {f, dEvent};

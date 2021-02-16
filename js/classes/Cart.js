@@ -1,18 +1,35 @@
 import {f} from "../main.js";
-import ProductInCart from "./productInCart.js";
+import ItemInCart from "./ItemInCart.js";
 
 export default class Cart {
+
     constructor(user) {
         this.user = user;
         this.$html = document.querySelector('.cart');
-        this.$title = this.getTitle();
         this.items = new Map();
         this.bindEvents();
     }
 
-    clearProducts() {
+    bindEvents() {
+        document.addEventListener('user-login', () => {
+            this.loadProducts();
+        });
+        document.addEventListener('user-out', () => {
+            this.clearProducts();
+        });
+        document.addEventListener('add-to-cart', () => {
+            this.loadProducts();
+        });
+        document.addEventListener('remove-to-cart', () => {
+            this.loadProducts();
+        });
+    }
+
+    render() {
         this.$html.innerHTML = '';
-        this.items = new Map();
+        this.$html.append(this.getTitle());
+        this.items.forEach(el => this.$html.append(el.getTemplate()));
+        this.$html.append(this.getPrice());
     }
 
     getTitle() {
@@ -29,45 +46,18 @@ export default class Cart {
         return h;
     }
 
-    render() {
-        this.$html.append(this.$title);
-        this.items.forEach(el => this.$html.append(el.render()));
-        this.$html.append(this.getPrice());
-    }
-
-    bindEvents() {
-        document.addEventListener('user-login', () => {
-            this.loadProducts();
-        });
-
-        document.addEventListener('user-out', () => {
-            this.clearProducts();
-        });
-
-        document.addEventListener('add-to-cart', () => {
-            this.loadProducts();
-        });
-
-        document.addEventListener('remove-to-cart', () => {
-            this.loadProducts();
-        });
-    }
-
-
     addItem(el) {
         if(!this.items.has(el.product.id)) {
-            this.items.set(el.product.id, new ProductInCart(el, this.user));
+            this.items.set(el.product.id, new ItemInCart(el, this.user));
             return;
         }
         this.items.get(el.product.id).addProduct(el);
     }
 
     async loadProducts() {
-        this.clearProducts();
+        this.items.clear();
         let list = await f('cart', 'get', this.user.api_token);
-
         list.forEach(el => this.addItem(el));
-
         this.render();
     }
 }

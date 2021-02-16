@@ -1,29 +1,35 @@
 import {dEvent, f} from "../main.js";
-import Product from "./product.js";
+import Product from "./Product.js";
 
-export default class ProductInShowcase {
+export default class ItemInShowcase {
+
     constructor(product, user) {
         this.product = new Product(product);
         this.user = user;
+        this.$html = this.getTemplate();
         this.bindEvents();
+    }
+
+    getTemplate() {
+        return this.product.$html;
     }
 
     bindEvents() {
         document.addEventListener('user-login', () => {
-            this.addButtonToCart();
+            this.addButtonToAddItem();
         });
 
         document.addEventListener('user-out', () => {
-            this.removeButtonToCart();
+            this.removeButtonToAddItem();
         });
     }
 
-    addButtonToCart() {
-        this.product.$html.append(this.getButtonAddToCart());
+    addButtonToAddItem() {
+        this.$html.append(this.getButtonAddToCart());
     }
 
-    removeButtonToCart() {
-        this.product.$html.querySelector('button')?.remove();
+    removeButtonToAddItem() {
+        this.$html.querySelector('button')?.remove();
     }
 
     getButtonAddToCart() {
@@ -31,10 +37,6 @@ export default class ProductInShowcase {
         btn.textContent = '+';
         btn.addEventListener('click', () => this.addToCart());
         return btn;
-    }
-
-    getHtml() {
-        return this.product.$html;
     }
 
     async addToCart() {

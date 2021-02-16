@@ -1,19 +1,13 @@
 import {dEvent, f} from "../main.js";
-import Product from "./product.js";
+import Product from "./Product.js";
 
-export default class ProductInCart {
+export default class ItemInCart {
 
     constructor(el, user) {
         this.products = new Map();
         this.products.set(el.id, new Product(el.product));
         this.user = user;
-        this.$html = this.render();
-    }
-
-    render() {
         this.$html = this.getTemplate();
-        this.addButtonCart();
-        return this.$html;
     }
 
     getTemplate() {
@@ -23,13 +17,14 @@ export default class ProductInCart {
             <p class="name">${this.getFirstProduct().product.name} - ${this.getFirstProduct().product.price} руб. x 
             ${this.getCountProducts()} = ${this.getPrice()} руб.</p>
             <hr>
-            <p class="description"><button class="remove">-</button><button class="add">+</button></p>`;
-        return div;
+            <p class="description"><button class="remove">-</button> <button class="add">+</button></p>`;
+        return this.addButtonsForItem(div);
     }
 
-    addButtonCart() {
-        this.$html.querySelector('.add').addEventListener('click', () => this.addToCart());
-        this.$html.querySelector('.remove').addEventListener('click', () => this.removeFromCart())
+    addButtonsForItem(item) {
+        item.querySelector('.add').addEventListener('click', () => this.addToCart());
+        item.querySelector('.remove').addEventListener('click', () => this.removeFromCart());
+        return item;
     }
 
     addProduct(el) {
