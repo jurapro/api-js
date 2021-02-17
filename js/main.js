@@ -1,3 +1,10 @@
+import User from './classes/User.js';
+import Showcase from './classes/Showcase.js';
+import Cart from './classes/Cart.js';
+import LoginForm from './classes/LoginForm.js';
+import RegisterForm from './classes/RegisterForm.js';
+
+
 const host = 'http://localhost/api';
 const f = async (url, method = 'get', token = null, data = []) => {
     const options = {
@@ -23,17 +30,13 @@ const dEvent = (event, detail) => {
     ));
 }
 
-import User from './classes/User.js';
-import Showcase from './classes/Showcase.js';
-import Cart from './classes/Cart.js';
-import LoginForm from './classes/LoginForm.js';
-
 class App {
 
     constructor() {
         this.user = new User();
         this.showcase = new Showcase('.showcase', this.user);
         this.loginForm = new LoginForm('.login', this.user);
+        this.registerForm = new RegisterForm('.register');
         this.cart = new Cart('.cart', this.user);
         this.loadData();
     }

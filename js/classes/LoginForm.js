@@ -9,18 +9,8 @@ export default class LoginForm {
             password: '',
         };
         this.$html = document.querySelector(layout);
-        this.render(this.getTemplateLogin());
+        this.render(this.getElementLogin());
         this.bindEvents();
-    }
-
-    bindEvents() {
-        document.addEventListener('user-login', () => {
-            this.render(this.getTemplateOut());
-        });
-
-        document.addEventListener('user-out', () => {
-            this.render(this.getTemplateLogin());
-        });
     }
 
     render(template) {
@@ -28,38 +18,69 @@ export default class LoginForm {
         this.$html.append(template);
     }
 
-    inputText(e) {
-        this.data[e.target.dataset.model] = e.target.value;
+    bindEvents() {
+        document.addEventListener('user-login', () => {
+            this.render(this.getElementOut());
+        });
+
+        document.addEventListener('user-out', () => {
+            this.render(this.getElementLogin());
+        });
+    }
+
+    getElementLogin() {
+        let div = document.createElement('div');
+        div.classList.add('item');
+        div.innerHTML = this.getTemplateLogin();
+        div.append(this.getButtonLogin());
+        return this.attachModel(div);
+    }
+
+    getElementOut() {
+        let div = document.createElement('div');
+        div.classList.add('item');
+        div.innerHTML = this.getTemplateOut();
+        div.append(this.getButtonOut());
+        return div;
     }
 
     getTemplateLogin() {
-        let div = document.createElement('div');
-        div.classList.add('item');
-        div.innerHTML = `
+        return `
             <h3>Вход</h3>
             <div class="message"></div>
             <label>Логин: <input type="email" data-model="email"></label>            
-            <label>Пароль: <input type="password" data-model="password"></label>  
-            <button>Вход</button>          
+            <label>Пароль: <input type="password" data-model="password"></label>           
             `;
-        div.querySelectorAll('input')
-            .forEach(el => el.addEventListener('input', (e) => this.inputText(e)));
-
-        div.querySelector('button')
-            .addEventListener('click', () => this.login());
-        return div;
     }
 
     getTemplateOut() {
-        let div = document.createElement('div');
-        div.classList.add('item');
-        div.innerHTML = `
-            <h3>Вы вошли как ${this.user.email}</h3> 
-            <button>Выход</button>          
+        return `
+            <h3>Вы вошли как ${this.user.email}</h3>         
             `;
-        div.querySelector('button')
-            .addEventListener('click', () => this.out());
-        return div;
+    }
+
+    getButtonLogin() {
+        let btn = document.createElement('button');
+        btn.textContent = 'Войти';
+        btn.addEventListener('click', () => this.login());
+        return btn;
+    }
+
+    getButtonOut() {
+        let btn = document.createElement('button');
+        btn.textContent = 'Выйти';
+        btn.addEventListener('click', () => this.out());
+        return btn;
+    }
+
+    attachModel(item) {
+        item.querySelectorAll('input')
+            .forEach(el => el.addEventListener('input', (e) => this.inputText(e)));
+        return item;
+    }
+
+    inputText(e) {
+        this.data[e.target.dataset.model] = e.target.value;
     }
 
     async login() {
