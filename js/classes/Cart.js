@@ -30,7 +30,10 @@ export default class Cart {
 
     render() {
         this.$html.append(this.getTitle());
-        this.items.forEach(el => this.$html.append(el.getElement()));
+        this.items.forEach(el => {
+            this.$html.append(el.getElement());
+            el.addEventsForButtons();
+        });
         this.$html.append(this.getPriceElement());
         this.$html.append(this.getButtonAddOrder());
     }
@@ -87,7 +90,6 @@ export default class Cart {
             alert(res.message);
             return;
         }
-
         alert(`Заказ оформлен. Сумма заказа составила: ${this.getPrice()}`);
         dEvent('order-by');
     }

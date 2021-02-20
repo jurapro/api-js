@@ -11,7 +11,7 @@ export default class Showcase {
 
     async loadProducts() {
         let list = await f('products');
-        list.forEach(el => this.products.push(new ItemInShowcase(el, this.user)));
+        this.products = list.map(el=>new ItemInShowcase(el, this.user));
         this.render();
     }
 

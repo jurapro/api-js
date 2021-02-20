@@ -34,7 +34,7 @@ export default class RegisterForm {
 
     getElement() {
         let div = document.createElement('div');
-        div.classList.add('item');
+        div.classList.add('register-item');
         div.innerHTML = this.getTemplate();
         div.append(this.getButtonRegister());
         return this.attachModel(div);

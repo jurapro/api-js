@@ -4,17 +4,18 @@ import Product from "./Product.js";
 export default class ItemInCart {
 
     constructor(el, user) {
-        this.products = new Map();
-        this.products.set(el.id, new Product(el.product));
+        this.products = [];
+        this.products.push({
+            id: el.id,
+            product: new Product(el.product)
+        });
         this.user = user;
         this.$html = this.getElement();
     }
 
     getElement() {
-        let div = document.createElement('div');
-        div.classList.add('item');
-        div.innerHTML = this.getTemplate();
-        return this.addEventsForButtons(div);
+        this.getFirstProduct().product.applyTemplate(this.getTemplate());
+        return this.getFirstProduct().product.$html;
     }
 
     getTemplate() {
@@ -23,16 +24,14 @@ export default class ItemInCart {
             ${this.getFirstProduct().product.name} - ${this.getFirstProduct().product.price} руб. x 
             ${this.getCountProducts()} = ${this.getPrice()} руб.
             </p>
-            <hr>
         `;
     }
 
-    addEventsForButtons(item) {
+    addEventsForButtons() {
         let div = document.createElement('div');
         div.append(this.getButtonRemoveFromCart());
         div.append(this.getButtonAddToCart());
-        item.append(div);
-        return item;
+        this.$html.append(div);
     }
 
     getButtonAddToCart() {
@@ -50,22 +49,26 @@ export default class ItemInCart {
     }
 
     addProduct(el) {
-        this.products.set(el.id, new Product(el.product));
+        this.products.push({
+            id: el.id,
+            product: new Product(el.product)
+        });
     }
 
     getFirstProduct() {
-        const id = this.products.keys().next().value;
-        const product = this.products.values().next().value;
-        return {id: id, product: product};
+        return {
+            id: this.products[0].id,
+            product: this.products[0].product
+        };
     }
 
     getCountProducts() {
-        return this.products.size;
+        return this.products.length;
     }
 
     getPrice() {
         let sum = 0;
-        this.products.forEach(product => sum += product.price);
+        this.products.forEach(item => sum += item.product.price);
         return sum;
     }
 

@@ -3,6 +3,7 @@ import Showcase from './classes/Showcase.js';
 import Cart from './classes/Cart.js';
 import LoginForm from './classes/LoginForm.js';
 import RegisterForm from './classes/RegisterForm.js';
+import Orders from './classes/Orders.js';
 
 
 const host = 'http://localhost/api';
@@ -38,6 +39,7 @@ class App {
         this.loginForm = new LoginForm('.login', this.user);
         this.registerForm = new RegisterForm('.register');
         this.cart = new Cart('.cart', this.user);
+        this.orders = new Orders('.orders', this.user);
         this.loadData();
     }
 

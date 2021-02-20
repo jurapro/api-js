@@ -30,7 +30,7 @@ export default class LoginForm {
 
     getElementLogin() {
         let div = document.createElement('div');
-        div.classList.add('item');
+        div.classList.add('login-item');
         div.innerHTML = this.getTemplateLogin();
         div.append(this.getButtonLogin());
         return this.attachModel(div);
@@ -38,7 +38,7 @@ export default class LoginForm {
 
     getElementOut() {
         let div = document.createElement('div');
-        div.classList.add('item');
+        div.classList.add('login-item');
         div.innerHTML = this.getTemplateOut();
         div.append(this.getButtonOut());
         return div;
@@ -84,6 +84,7 @@ export default class LoginForm {
     }
 
     async login() {
+        if (!this.data.email || !this.data.password) return;
         let res = await f('login', 'post', null, this.data);
         if (res.message) {
             this.$html.querySelector('.message').innerHTML = 'Не правильный логин или пароль';

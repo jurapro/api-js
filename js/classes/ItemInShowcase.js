@@ -11,7 +11,16 @@ export default class ItemInShowcase {
     }
 
     getElement() {
+        this.product.applyTemplate(this.getTemplate());
         return this.product.$html;
+    }
+
+    getTemplate() {
+        return `
+            <p class="name">${this.product.name} - ${this.product.price} руб.</p>
+            <hr>
+            <p class="description">${this.product.description}</p>
+        `;
     }
 
     bindEvents() {
